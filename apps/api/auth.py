@@ -1,10 +1,11 @@
 import jwt, datetime
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Request, Depends, HTTPException
 from apps.utils import get_db, Database, check_password
 from apps.schemas.auth import UserIn, Login
-from apps.models.auth import User
+from apps.models.auth import User, Session
 from apps.core.config import settings
 from fastapi.security import APIKeyHeader
+import requests as req
 
 
 router = APIRouter(prefix='/auth',tags=['auth'])
@@ -45,7 +46,7 @@ def create_user(body: UserIn, db = Depends(get_db)):
 
 
 @router.post('/login',status_code=201)
-def login(body: Login, db = Depends(get_db)):
+def login(request: Request, body: Login, db = Depends(get_db)):
     db_ref = Database(db,User)
     user = db_ref.get_by_any(username=body.username)
     if not user:
@@ -62,12 +63,33 @@ def login(body: Login, db = Depends(get_db)):
     refresh_token_payload['token_type'] = 'refresh'
     access_token = jwt.encode(access_token_payload,settings.SECRET_KEY,'HS256')
     refresh_token = jwt.encode(refresh_token_payload,settings.SECRET_KEY,'HS256')
+    ipinfo_response = req.get("https://ipinfo.io/json").json()
+    db_session = Database(db,Session)
+    db_session.create(
+        access_token=access_token,    
+        refresh_token=refresh_token,    
+        city=ipinfo_response.get("city", None),
+        country=ipinfo_response.get("country", None),
+        region=ipinfo_response.get("region", None),
+        ip=ipinfo_response.get("ip", None),
+        user_agent=request.headers.get("User-Agent", None),
+        timezone=ipinfo_response.get("timezone", None),
+        loc=ipinfo_response.get("loc", None),
+        user_id=user.id
+    )
     return {
         "access_token": access_token,
         "refresh_token": refresh_token
     }
 
 
-@router.get('/me',status_code=201)
+@router.get('/me',status_code=200)
 def me(user = Depends(authenticate_token),db = Depends(get_db)):
+    return user
+
+
+@router.get('/refresh',status_code=200)
+def me(user = Depends(authenticate_token),db = Depends(get_db)):
+
+
     return user

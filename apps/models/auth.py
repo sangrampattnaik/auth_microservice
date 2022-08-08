@@ -11,20 +11,20 @@ class User(Base):
     is_active = sa.Column(sa.Boolean,default=True)
     
     # relationship
-    sessions = relationship("Token",back_populates="user")
+    sessions = relationship("Session",back_populates="user")
     
     
 class Session(Base):
     access_token = sa.Column(sa.String(255),nullable=True,default='')
     refresh_token = sa.Column(sa.String(255),nullable=True,default='')
     user_id = sa.Column(sa.Integer,sa.ForeignKey('users.id'))
-    city = sa.Column(sa.String(255))
-    country = sa.Column(sa.String(255))
-    region = sa.Column(sa.String(255))
-    ip = sa.Column(sa.String(255))
-    user_agent = sa.Column(sa.String(255))
-    timezone = sa.Column(sa.String(255))
-    loc = sa.Column(sa.String(255))
+    city = sa.Column(sa.String(255),nullable=True)
+    country = sa.Column(sa.String(255),nullable=True)
+    region = sa.Column(sa.String(255),nullable=True)
+    ip = sa.Column(sa.String(255), nullable=True)
+    user_agent = sa.Column(sa.String(255),nullable=True)
+    timezone = sa.Column(sa.String(255),nullable=True)
+    loc = sa.Column(sa.String(255),nullable=True)
     created_at = sa.Column(sa.DateTime, default=datetime.datetime.utcnow)
     
     # relationship 
