@@ -11,20 +11,12 @@ class User(Base):
     is_active = sa.Column(sa.Boolean,default=True)
     
     # relationship
-    tokens = relationship("Token",back_populates="user")
     sessions = relationship("Token",back_populates="user")
     
     
-class Token(Base):
-    access_token = sa.Column(sa.String(255))
-    refresh_token = sa.Column(sa.String(255))
-    user_id = sa.Column(sa.Integer,sa.ForeignKey('users.id'))
-
-    # relationship 
-    user = relationship("Token",back_populates="tokens")
-    
-    
 class Session(Base):
+    access_token = sa.Column(sa.String(255),nullable=True,default='')
+    refresh_token = sa.Column(sa.String(255),nullable=True,default='')
     user_id = sa.Column(sa.Integer,sa.ForeignKey('users.id'))
     city = sa.Column(sa.String(255))
     country = sa.Column(sa.String(255))
